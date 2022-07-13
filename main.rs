@@ -3,8 +3,7 @@ use reqwest::Url;
 use serde_json::Value;
 
 const BASE_SNCF_API: &str = "https://data.sncf.com/api/records/1.0/search/";
-// const PARIS_MARSEILLE_URL: &str = "https://data.sncf.com/api/records/1.0/search/?dataset=tgvmax&q=&facet=date&facet=origine&facet=od_happy_card&facet=destination&refine.origine=PARIS+(intramuros)&refine.destination=MARSEILLE+ST+CHARLES";
-// const PARIS_MARSEILLE_HAPPY_CARD_URL: &str = "https://data.sncf.com/api/records/1.0/search/?dataset=tgvmax&q=&facet=date&facet=origine&facet=destination&facet=od_happy_card&refine.origine=PARIS+(intramuros)&refine.destination=MARSEILLE+ST+CHARLES&refine.od_happy_card=OUI";
+const _PARIS_MARSEILLE_HAPPY_CARD_EXAMPLE_URL: &str = "https://data.sncf.com/api/records/1.0/search/?dataset=tgvmax&q=&facet=date&facet=origine&facet=destination&facet=od_happy_card&refine.origine=PARIS+(intramuros)&refine.destination=MARSEILLE+ST+CHARLES&refine.od_happy_card=OUI";
 
 #[derive(Debug)]
 enum Gare {
@@ -20,21 +19,18 @@ impl Gare {
             Gare::Paris => "PARIS (intramuros)",
             Gare::Marseille => "MARSEILLE ST CHARLES",
             Gare::LaRochelle => "LA ROCHELLE VILLE",
-            Gare::Lyon => "Lyon (intramuros)",
+            Gare::Lyon => "LYON (intramuros)",
         }
     }
 }
 
-impl std::string::ToString for Gare {
-    fn to_string(&self) -> String {
-        self.value().to_string()
+impl std::fmt::Display for Gare {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.value())
     }
 }
 
 fn main() {
-    // The MAX JEUNE URL with query strings Paris => Marseille.
-    // It is a public endpoint so no token needed.
-
     let url_paris_marseille = construct_tgvmax_query_url(Gare::Paris, Gare::Marseille, false);
     let url_paris_marseille_happy_card =
         construct_tgvmax_query_url(Gare::Paris, Gare::Marseille, true);
@@ -55,7 +51,7 @@ fn get_number_from_url(url: &str) -> Result<u64> {
     Ok(n)
 }
 
-/// Construct query urls for the SNCF api.
+/// Construct a tgvmax query url using the provided details.
 fn construct_tgvmax_query_url(origin: Gare, destination: Gare, happy_card: bool) -> String {
     let mut params = vec![
         ("dataset", "tgvmax"),

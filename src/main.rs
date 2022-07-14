@@ -7,14 +7,22 @@ fn main() {
     let (total, available) = sncf::get_available_tgvmax_ratio(origin, destination);
     println!("For the journey {} => {},", origin, destination);
     println!(
-        "there are {} out of {} MAX JEUNE trains are available in the next 30 days.",
+        "there are {} out of {} MAX JEUNE trains available in the next 30 days.",
         available, total
     );
 
     if available > 0 {
         println!("!! QUICK !!");
         println!("HURRY UP TO BOOK!");
+
+        let url = &sncf::construct_tgvmax_query_url(origin, destination, true);
+        let travels = sncf::get_travels(url).unwrap();
+        for t in travels {
+            println!("{}", t);
+        }
     } else {
         println!("No train for you today.")
     }
+
+    println!("Be advised that this ***** API from the SNCF miss a lot of bookable trains, so don't rely on it and construct something more robust on top of their private API or god knows what.")
 }

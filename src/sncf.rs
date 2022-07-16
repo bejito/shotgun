@@ -6,7 +6,9 @@ use serde_json::Value;
 const BASE_SNCF_API: &str = "https://data.sncf.com/api/records/1.0/search/";
 const _PARIS_MARSEILLE_HAPPY_CARD_EXAMPLE_URL: &str = "https://data.sncf.com/api/records/1.0/search/?dataset=tgvmax&q=&facet=date&facet=origine&facet=destination&facet=od_happy_card&refine.origine=PARIS+(intramuros)&refine.destination=MARSEILLE+ST+CHARLES&refine.od_happy_card=OUI";
 
-#[derive(Debug, Clone, Copy)]
+/// Gare is an train station.
+/// Just giving a nice french vibe here. Next step: strikes.
+#[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum Gare {
     Paris,
     Marseille,
@@ -37,14 +39,20 @@ pub struct Travel {
     date: String,
     departure_time: String,
     arrival_time: String,
+    train: String,
 }
 
 impl std::fmt::Display for Travel {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{}: {} {} => {} {} ",
-            self.date, self.departure_time, self.origin, self.arrival_time, self.destination
+            "{}: {} {} {} => {} {}",
+            self.date,
+            self.train,
+            self.origin,
+            self.departure_time,
+            self.arrival_time,
+            self.destination
         )
     }
 }
@@ -56,8 +64,6 @@ struct Response {
 
 #[derive(Deserialize)]
 struct Record {
-    datasetid: String,
-    recordid: String,
     fields: Fields,
 }
 
@@ -70,6 +76,8 @@ struct Fields {
     departure_time: String,
     #[serde(rename = "heure_arrivee")]
     arrival_time: String,
+    #[serde(rename = "train_no")]
+    train: String,
 }
 
 pub fn get_travels(url: &str) -> Result<Vec<Travel>> {
@@ -85,8 +93,10 @@ pub fn get_travels(url: &str) -> Result<Vec<Travel>> {
             date: f.date,
             departure_time: f.departure_time,
             arrival_time: f.arrival_time,
+            train: f.train,
         });
     }
+    travels.sort_by(|t1, t2| t1.date.cmp(&t2.date));
     Ok(travels)
 }
 

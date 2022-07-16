@@ -1,8 +1,26 @@
+use clap::Parser;
+
 mod sncf;
 
+/// Shotgun SNCF trains. First arrive first served.
+#[derive(Parser, Debug)]
+#[clap(author="Louis Vignoli", version, about, long_about = None)]
+struct Args {
+    /// Origin station
+    #[clap(value_parser, default_value = "marseille")]
+    origin: sncf::Gare,
+    /// Destination station
+    #[clap(value_parser, default_value = "paris")]
+    destination: sncf::Gare,
+}
+
 fn main() {
-    let origin = sncf::Gare::Marseille;
-    let destination = sncf::Gare::Paris;
+    let args = Args::parse();
+
+    println!("Going from {} to {}.", args.origin, args.destination);
+
+    let origin = args.origin;
+    let destination = args.destination;
 
     let (total, available) = sncf::get_available_tgvmax_ratio(origin, destination);
     println!("For the journey {} => {},", origin, destination);
